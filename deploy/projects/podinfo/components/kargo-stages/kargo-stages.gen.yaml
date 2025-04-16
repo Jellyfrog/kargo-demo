@@ -16,7 +16,7 @@ spec:
           - branch: project/podinfo/component/dev-podinfo
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -46,7 +46,7 @@ spec:
           - name: podinfo-dev-podinfo
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
@@ -73,7 +73,7 @@ spec:
           - branch: project/podinfo/component/prod-us-central-podinfo
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -103,7 +103,7 @@ spec:
           - name: podinfo-prod-us-central-podinfo
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
@@ -131,7 +131,7 @@ spec:
           - branch: project/podinfo/component/prod-us-east-podinfo
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -161,7 +161,7 @@ spec:
           - name: podinfo-prod-us-east-podinfo
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
@@ -189,7 +189,7 @@ spec:
           - branch: project/podinfo/component/prod-us-west-podinfo
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -219,7 +219,7 @@ spec:
           - name: podinfo-prod-us-west-podinfo
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
@@ -247,7 +247,7 @@ spec:
           - branch: project/podinfo/component/test-podinfo
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -277,7 +277,7 @@ spec:
           - name: podinfo-test-podinfo
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
@@ -305,7 +305,7 @@ spec:
           - branch: project/podinfo/component/uat-podinfo
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -335,7 +335,7 @@ spec:
           - name: podinfo-uat-podinfo
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:

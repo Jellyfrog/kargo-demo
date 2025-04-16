@@ -16,5 +16,5 @@ spec:
     project: argocd
     source:
         path: deploy/components/kargo-promoter
-        repoURL: https://github.com/holos-run/kargo-demo.git
+        repoURL: https://github.com/jellyfrog/kargo-demo.git
         targetRevision: main

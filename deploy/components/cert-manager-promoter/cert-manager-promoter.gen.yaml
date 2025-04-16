@@ -28,7 +28,7 @@ spec:
           checkout:
           - branch: main
             path: ./src
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - as: update
         config:
@@ -51,7 +51,7 @@ spec:
         uses: git-push
       - as: pull
         config:
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
           sourceBranch: ${{ outputs.push.branch }}
           targetBranch: main
         uses: git-open-pr

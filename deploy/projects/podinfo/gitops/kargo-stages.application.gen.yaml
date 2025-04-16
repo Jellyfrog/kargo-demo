@@ -10,5 +10,5 @@ spec:
     project: podinfo
     source:
         path: deploy/projects/podinfo/components/kargo-stages
-        repoURL: https://github.com/holos-run/kargo-demo.git
+        repoURL: https://github.com/jellyfrog/kargo-demo.git
         targetRevision: main

@@ -14,5 +14,5 @@ spec:
     project: podinfo
     source:
         path: ./
-        repoURL: https://github.com/holos-run/kargo-demo.git
+        repoURL: https://github.com/jellyfrog/kargo-demo.git
         targetRevision: project/podinfo/component/uat-podinfo

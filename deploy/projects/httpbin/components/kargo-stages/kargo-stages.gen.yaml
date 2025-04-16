@@ -16,7 +16,7 @@ spec:
           - branch: project/httpbin/component/dev-httpbin
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -46,7 +46,7 @@ spec:
           - name: httpbin-dev-httpbin
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
@@ -73,7 +73,7 @@ spec:
           - branch: project/httpbin/component/prod-us-central-httpbin
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -103,7 +103,7 @@ spec:
           - name: httpbin-prod-us-central-httpbin
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
@@ -131,7 +131,7 @@ spec:
           - branch: project/httpbin/component/prod-us-east-httpbin
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -161,7 +161,7 @@ spec:
           - name: httpbin-prod-us-east-httpbin
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
@@ -189,7 +189,7 @@ spec:
           - branch: project/httpbin/component/prod-us-west-httpbin
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -219,7 +219,7 @@ spec:
           - name: httpbin-prod-us-west-httpbin
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
@@ -247,7 +247,7 @@ spec:
           - branch: project/httpbin/component/test-httpbin
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -277,7 +277,7 @@ spec:
           - name: httpbin-test-httpbin
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
@@ -305,7 +305,7 @@ spec:
           - branch: project/httpbin/component/uat-httpbin
             create: true
             path: ./out
-          repoURL: https://github.com/holos-run/kargo-demo.git
+          repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: git-clone
       - config:
           path: ./out
@@ -335,7 +335,7 @@ spec:
           - name: httpbin-uat-httpbin
             sources:
             - desiredCommitFromStep: commit
-              repoURL: https://github.com/holos-run/kargo-demo.git
+              repoURL: https://github.com/jellyfrog/kargo-demo.git
         uses: argocd-update
   requestedFreight:
   - origin:
