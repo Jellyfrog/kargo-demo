@@ -12,7 +12,6 @@ set -xeuo pipefail
 k3d cluster delete workload
 
 k3d cluster create workload \
-  --registry-use k3d-registry.holos.localhost:5100 \
   --port "443:443@loadbalancer" \
   --k3s-arg "--disable=traefik@server:0"
 

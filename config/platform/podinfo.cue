@@ -3,7 +3,7 @@ package platform
 import "holos.example/types/platform"
 
 projects: podinfo: (platform.#ProjectBuilder & {
-	let IMAGE = "quay.io/holos/stefanprodan/podinfo"
+	let IMAGE = "stefanprodan/podinfo"
 	let PROJECT_NAME = parameters.name
 	let STAGES = stages
 
