@@ -3,7 +3,7 @@ package platform
 import "holos.example/types/platform"
 
 projects: httpbin: (platform.#ProjectBuilder & {
-	let IMAGE = "quay.io/holos/mccutchen/go-httpbin"
+	let IMAGE = "ghcr.io/mccutchen/go-httpbin"
 	let PROJECT_NAME = parameters.name
 	let STAGES = stages
 

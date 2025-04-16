@@ -24,7 +24,7 @@ spec:
       - as: update-image
         config:
           images:
-          - image: quay.io/holos/mccutchen/go-httpbin
+          - image: ghcr.io/mccutchen/go-httpbin
           path: ./src/deploy/projects/httpbin/components/dev-httpbin
         uses: kustomize-set-image
       - config:
@@ -81,7 +81,7 @@ spec:
       - as: update-image
         config:
           images:
-          - image: quay.io/holos/mccutchen/go-httpbin
+          - image: ghcr.io/mccutchen/go-httpbin
           path: ./src/deploy/projects/httpbin/components/prod-us-central-httpbin
         uses: kustomize-set-image
       - config:
@@ -139,7 +139,7 @@ spec:
       - as: update-image
         config:
           images:
-          - image: quay.io/holos/mccutchen/go-httpbin
+          - image: ghcr.io/mccutchen/go-httpbin
           path: ./src/deploy/projects/httpbin/components/prod-us-east-httpbin
         uses: kustomize-set-image
       - config:
@@ -197,7 +197,7 @@ spec:
       - as: update-image
         config:
           images:
-          - image: quay.io/holos/mccutchen/go-httpbin
+          - image: ghcr.io/mccutchen/go-httpbin
           path: ./src/deploy/projects/httpbin/components/prod-us-west-httpbin
         uses: kustomize-set-image
       - config:
@@ -255,7 +255,7 @@ spec:
       - as: update-image
         config:
           images:
-          - image: quay.io/holos/mccutchen/go-httpbin
+          - image: ghcr.io/mccutchen/go-httpbin
           path: ./src/deploy/projects/httpbin/components/test-httpbin
         uses: kustomize-set-image
       - config:
@@ -313,7 +313,7 @@ spec:
       - as: update-image
         config:
           images:
-          - image: quay.io/holos/mccutchen/go-httpbin
+          - image: ghcr.io/mccutchen/go-httpbin
           path: ./src/deploy/projects/httpbin/components/uat-httpbin
         uses: kustomize-set-image
       - config:
@@ -357,6 +357,6 @@ spec:
   subscriptions:
   - image:
       discoveryLimit: 5
-      repoURL: quay.io/holos/mccutchen/go-httpbin
+      repoURL: ghcr.io/mccutchen/go-httpbin
       semverConstraint: ^2.0.0
       strictSemvers: true
