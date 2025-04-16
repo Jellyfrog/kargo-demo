@@ -2,7 +2,222 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.5
+    controller-gen.kubebuilder.io/version: v0.17.2
+    helm.sh/resource-policy: keep
+  labels:
+    argocd.argoproj.io/instance: argocd-kargo
+  name: clusterpromotiontasks.kargo.akuity.io
+spec:
+  group: kargo.akuity.io
+  names:
+    kind: ClusterPromotionTask
+    listKind: ClusterPromotionTaskList
+    plural: clusterpromotiontasks
+    shortNames:
+    - clusterpromotask
+    - clusterpromotasks
+    singular: clusterpromotiontask
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              Spec describes the desired transition of a specific Stage into a specific
+              Freight.
+            properties:
+              steps:
+                description: |-
+                  Steps specifies the directives to be executed as part of this
+                  PromotionTask. The steps as defined here are inflated into a
+                  Promotion when it is built from a PromotionTemplate.
+                items:
+                  description: PromotionStep describes a directive to be executed
+                    as part of a Promotion.
+                  properties:
+                    as:
+                      description: As is the alias this step can be referred to as.
+                      type: string
+                    config:
+                      description: |-
+                        Config is opaque configuration for the PromotionStep that is understood
+                        only by each PromotionStep's implementation. It is legal to utilize
+                        expressions in defining values at any level of this block.
+                        See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
+                      x-kubernetes-preserve-unknown-fields: true
+                    if:
+                      description: |-
+                        If is an optional expression that, if present, must evaluate to a boolean
+                        value. If the expression evaluates to false, the step will be skipped.
+                        If the expression does not evaluate to a boolean value, the step will be
+                        considered to have failed.
+                      type: string
+                    retry:
+                      description: Retry is the retry policy for this step.
+                      properties:
+                        errorThreshold:
+                          description: |-
+                            ErrorThreshold is the number of consecutive times the step must fail (for
+                            any reason) before retries are abandoned and the entire Promotion is marked
+                            as failed.
+
+                            If this field is set to 0, the effective default will be a step-specific
+                            one. If no step-specific default exists (i.e. is also 0), the effective
+                            default will be the system-wide default of 1.
+
+                            A value of 1 will cause the Promotion to be marked as failed after just
+                            a single failure; i.e. no retries will be attempted.
+
+                            There is no option to specify an infinite number of retries using a value
+                            such as -1.
+
+                            In a future release, Kargo is likely to become capable of distinguishing
+                            between recoverable and non-recoverable step failures. At that time, it is
+                            planned that unrecoverable failures will not be subject to this threshold
+                            and will immediately cause the Promotion to be marked as failed without
+                            further condition.
+                          format: int32
+                          type: integer
+                        timeout:
+                          description: |-
+                            Timeout is the soft maximum interval in which a step that returns a Running
+                            status (which typically indicates it's waiting for something to happen)
+                            may be retried.
+
+                            The maximum is a soft one because the check for whether the interval has
+                            elapsed occurs AFTER the step has run. This effectively means a step may
+                            run ONCE beyond the close of the interval.
+
+                            If this field is set to nil, the effective default will be a step-specific
+                            one. If no step-specific default exists (i.e. is also nil), the effective
+                            default will be the system-wide default of 0.
+
+                            A value of 0 will cause the step to be retried indefinitely unless the
+                            ErrorThreshold is reached.
+                          type: string
+                      type: object
+                    task:
+                      description: |-
+                        Task is a reference to a PromotionTask that should be inflated into a
+                        Promotion when it is built from a PromotionTemplate.
+                      properties:
+                        kind:
+                          description: |-
+                            Kind is the type of the PromotionTask. Can be either PromotionTask or
+                            ClusterPromotionTask, default is PromotionTask.
+                          enum:
+                          - PromotionTask
+                          - ClusterPromotionTask
+                          type: string
+                        name:
+                          description: Name is the name of the (Cluster)PromotionTask.
+                          maxLength: 253
+                          minLength: 1
+                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    uses:
+                      description: Uses identifies a runner that can execute this
+                        step.
+                      minLength: 1
+                      type: string
+                    vars:
+                      description: |-
+                        Vars is a list of variables that can be referenced by expressions in
+                        the step's Config. The values override the values specified in the
+                        PromotionSpec.
+                      items:
+                        description: |-
+                          PromotionVariable describes a single variable that may be referenced by
+                          expressions in promotion steps.
+                        properties:
+                          name:
+                            description: Name is the name of the variable.
+                            minLength: 1
+                            pattern: ^[a-zA-Z_]\w*$
+                            type: string
+                          value:
+                            description: |-
+                              Value is the value of the variable. It is allowed to utilize expressions
+                              in the value.
+                              See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      type: array
+                  type: object
+                  x-kubernetes-validations:
+                  - message: PromotionTask step must have uses set and must not reference
+                      another task
+                    rule: has(self.uses) && !has(self.task)
+                minItems: 1
+                type: array
+              vars:
+                description: |-
+                  Vars specifies the variables available to the PromotionTask. The
+                  values of these variables are the default values that can be
+                  overridden by the step referencing the task.
+                items:
+                  description: |-
+                    PromotionVariable describes a single variable that may be referenced by
+                    expressions in promotion steps.
+                  properties:
+                    name:
+                      description: Name is the name of the variable.
+                      minLength: 1
+                      pattern: ^[a-zA-Z_]\w*$
+                      type: string
+                    value:
+                      description: |-
+                        Value is the value of the variable. It is allowed to utilize expressions
+                        in the value.
+                        See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                type: array
+            required:
+            - steps
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -117,6 +332,12 @@ spec:
             items:
               description: Image describes a specific version of a container image.
               properties:
+                annotations:
+                  additionalProperties:
+                    type: string
+                  description: Annotations is a map of arbitrary metadata for the
+                    image.
+                  type: object
                 digest:
                   description: |-
                     Digest identifies a specific version of the image in the repository
@@ -162,7 +383,7 @@ spec:
               name:
                 description: |-
                   Name is the name of the resource of the kind indicated by the Kind field
-                  from which Freight may originated.
+                  from which Freight may originate.
                 type: string
             required:
             - kind
@@ -176,6 +397,12 @@ spec:
                   description: |-
                     ApprovedStage describes a Stage for which Freight has been (manually)
                     approved.
+                  properties:
+                    approvedAt:
+                      description: ApprovedAt is the time at which the Freight was
+                        approved for the Stage.
+                      format: date-time
+                      type: string
                   type: object
                 description: |-
                   ApprovedFor describes the Stages for which this Freight has been approved
@@ -183,10 +410,39 @@ spec:
                   might wish to promote a piece of Freight to a given Stage without
                   transiting the entire pipeline.
                 type: object
+              currentlyIn:
+                additionalProperties:
+                  description: CurrentStage reflects a Stage's current use of Freight.
+                  properties:
+                    since:
+                      description: |-
+                        Since is the time at which the Stage most recently started using the
+                        Freight. This can be used to calculate how long the Freight has been in use
+                        by the Stage.
+                      format: date-time
+                      type: string
+                  type: object
+                description: CurrentlyIn describes the Stages in which this Freight
+                  is currently in use.
+                type: object
               verifiedIn:
                 additionalProperties:
                   description: VerifiedStage describes a Stage in which Freight has
                     been verified.
+                  properties:
+                    longestSoak:
+                      description: |-
+                        LongestCompletedSoak represents the longest definite time interval wherein
+                        the Freight was in CONTINUOUS use by the Stage. This value is updated as
+                        Freight EXITS the Stage. If the Freight is currently in use by the Stage,
+                        the time elapsed since the Freight ENTERED the Stage is its current soak
+                        time, which may exceed the value of this field.
+                      type: string
+                    verifiedAt:
+                      description: VerifiedAt is the time at which the Freight was
+                        verified in the Stage.
+                      format: date-time
+                      type: string
                   type: object
                 description: |-
                   VerifiedIn describes the Stages in which this Freight has been verified
@@ -205,7 +461,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.5
+    controller-gen.kubebuilder.io/version: v0.17.2
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -374,7 +630,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.5
+    controller-gen.kubebuilder.io/version: v0.17.2
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -440,13 +696,16 @@ spec:
                 description: |-
                   Freight specifies the piece of Freight to be promoted into the Stage
                   referenced by the Stage field.
+                maxLength: 253
                 minLength: 1
+                pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                 type: string
               stage:
                 description: |-
                   Stage specifies the name of the Stage to which this Promotion
                   applies. The Stage referenced by this field MUST be in the same
                   namespace as the Promotion.
+                maxLength: 253
                 minLength: 1
                 pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
                 type: string
@@ -467,8 +726,15 @@ spec:
                         Config is opaque configuration for the PromotionStep that is understood
                         only by each PromotionStep's implementation. It is legal to utilize
                         expressions in defining values at any level of this block.
-                        See https://docs.kargo.io/references/expression-language for details.
+                        See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
                       x-kubernetes-preserve-unknown-fields: true
+                    if:
+                      description: |-
+                        If is an optional expression that, if present, must evaluate to a boolean
+                        value. If the expression evaluates to false, the step will be skipped.
+                        If the expression does not evaluate to a boolean value, the step will be
+                        considered to have failed.
+                      type: string
                     retry:
                       description: Retry is the retry policy for this step.
                       properties:
@@ -513,14 +779,64 @@ spec:
                             ErrorThreshold is reached.
                           type: string
                       type: object
+                    task:
+                      description: |-
+                        Task is a reference to a PromotionTask that should be inflated into a
+                        Promotion when it is built from a PromotionTemplate.
+                      properties:
+                        kind:
+                          description: |-
+                            Kind is the type of the PromotionTask. Can be either PromotionTask or
+                            ClusterPromotionTask, default is PromotionTask.
+                          enum:
+                          - PromotionTask
+                          - ClusterPromotionTask
+                          type: string
+                        name:
+                          description: Name is the name of the (Cluster)PromotionTask.
+                          maxLength: 253
+                          minLength: 1
+                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                          type: string
+                      required:
+                      - name
+                      type: object
                     uses:
                       description: Uses identifies a runner that can execute this
                         step.
                       minLength: 1
                       type: string
-                  required:
-                  - uses
+                    vars:
+                      description: |-
+                        Vars is a list of variables that can be referenced by expressions in
+                        the step's Config. The values override the values specified in the
+                        PromotionSpec.
+                      items:
+                        description: |-
+                          PromotionVariable describes a single variable that may be referenced by
+                          expressions in promotion steps.
+                        properties:
+                          name:
+                            description: Name is the name of the variable.
+                            minLength: 1
+                            pattern: ^[a-zA-Z_]\w*$
+                            type: string
+                          value:
+                            description: |-
+                              Value is the value of the variable. It is allowed to utilize expressions
+                              in the value.
+                              See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      type: array
                   type: object
+                  x-kubernetes-validations:
+                  - message: Promotion step must have uses set and must not reference
+                      a task
+                    rule: has(self.uses) && !has(self.task)
+                minItems: 1
                 type: array
               vars:
                 description: |-
@@ -540,16 +856,16 @@ spec:
                       description: |-
                         Value is the value of the variable. It is allowed to utilize expressions
                         in the value.
-                        See https://docs.kargo.io/references/expression-language for details.
+                        See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
                       type: string
                   required:
                   - name
-                  - value
                   type: object
                 type: array
             required:
             - freight
             - stage
+            - steps
             type: object
           status:
             description: |-
@@ -638,6 +954,12 @@ spec:
                       description: Image describes a specific version of a container
                         image.
                       properties:
+                        annotations:
+                          additionalProperties:
+                            type: string
+                          description: Annotations is a map of arbitrary metadata
+                            for the image.
+                          type: object
                         digest:
                           description: |-
                             Digest identifies a specific version of the image in the repository
@@ -680,7 +1002,7 @@ spec:
                       name:
                         description: |-
                           Name is the name of the resource of the kind indicated by the Kind field
-                          from which Freight may originated.
+                          from which Freight may originate.
                         type: string
                     required:
                     - kind
@@ -773,6 +1095,12 @@ spec:
                             description: Image describes a specific version of a container
                               image.
                             properties:
+                              annotations:
+                                additionalProperties:
+                                  type: string
+                                description: Annotations is a map of arbitrary metadata
+                                  for the image.
+                                type: object
                               digest:
                                 description: |-
                                   Digest identifies a specific version of the image in the repository
@@ -815,7 +1143,7 @@ spec:
                             name:
                               description: |-
                                 Name is the name of the resource of the kind indicated by the Kind field
-                                from which Freight may originated.
+                                from which Freight may originate.
                               type: string
                           required:
                           - kind
@@ -984,7 +1312,222 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.5
+    controller-gen.kubebuilder.io/version: v0.17.2
+    helm.sh/resource-policy: keep
+  labels:
+    argocd.argoproj.io/instance: argocd-kargo
+  name: promotiontasks.kargo.akuity.io
+spec:
+  group: kargo.akuity.io
+  names:
+    kind: PromotionTask
+    listKind: PromotionTaskList
+    plural: promotiontasks
+    shortNames:
+    - promotask
+    - promotasks
+    singular: promotiontask
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: |-
+              Spec describes the composition of a PromotionTask, including the
+              variables available to the task and the steps.
+            properties:
+              steps:
+                description: |-
+                  Steps specifies the directives to be executed as part of this
+                  PromotionTask. The steps as defined here are inflated into a
+                  Promotion when it is built from a PromotionTemplate.
+                items:
+                  description: PromotionStep describes a directive to be executed
+                    as part of a Promotion.
+                  properties:
+                    as:
+                      description: As is the alias this step can be referred to as.
+                      type: string
+                    config:
+                      description: |-
+                        Config is opaque configuration for the PromotionStep that is understood
+                        only by each PromotionStep's implementation. It is legal to utilize
+                        expressions in defining values at any level of this block.
+                        See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
+                      x-kubernetes-preserve-unknown-fields: true
+                    if:
+                      description: |-
+                        If is an optional expression that, if present, must evaluate to a boolean
+                        value. If the expression evaluates to false, the step will be skipped.
+                        If the expression does not evaluate to a boolean value, the step will be
+                        considered to have failed.
+                      type: string
+                    retry:
+                      description: Retry is the retry policy for this step.
+                      properties:
+                        errorThreshold:
+                          description: |-
+                            ErrorThreshold is the number of consecutive times the step must fail (for
+                            any reason) before retries are abandoned and the entire Promotion is marked
+                            as failed.
+
+                            If this field is set to 0, the effective default will be a step-specific
+                            one. If no step-specific default exists (i.e. is also 0), the effective
+                            default will be the system-wide default of 1.
+
+                            A value of 1 will cause the Promotion to be marked as failed after just
+                            a single failure; i.e. no retries will be attempted.
+
+                            There is no option to specify an infinite number of retries using a value
+                            such as -1.
+
+                            In a future release, Kargo is likely to become capable of distinguishing
+                            between recoverable and non-recoverable step failures. At that time, it is
+                            planned that unrecoverable failures will not be subject to this threshold
+                            and will immediately cause the Promotion to be marked as failed without
+                            further condition.
+                          format: int32
+                          type: integer
+                        timeout:
+                          description: |-
+                            Timeout is the soft maximum interval in which a step that returns a Running
+                            status (which typically indicates it's waiting for something to happen)
+                            may be retried.
+
+                            The maximum is a soft one because the check for whether the interval has
+                            elapsed occurs AFTER the step has run. This effectively means a step may
+                            run ONCE beyond the close of the interval.
+
+                            If this field is set to nil, the effective default will be a step-specific
+                            one. If no step-specific default exists (i.e. is also nil), the effective
+                            default will be the system-wide default of 0.
+
+                            A value of 0 will cause the step to be retried indefinitely unless the
+                            ErrorThreshold is reached.
+                          type: string
+                      type: object
+                    task:
+                      description: |-
+                        Task is a reference to a PromotionTask that should be inflated into a
+                        Promotion when it is built from a PromotionTemplate.
+                      properties:
+                        kind:
+                          description: |-
+                            Kind is the type of the PromotionTask. Can be either PromotionTask or
+                            ClusterPromotionTask, default is PromotionTask.
+                          enum:
+                          - PromotionTask
+                          - ClusterPromotionTask
+                          type: string
+                        name:
+                          description: Name is the name of the (Cluster)PromotionTask.
+                          maxLength: 253
+                          minLength: 1
+                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    uses:
+                      description: Uses identifies a runner that can execute this
+                        step.
+                      minLength: 1
+                      type: string
+                    vars:
+                      description: |-
+                        Vars is a list of variables that can be referenced by expressions in
+                        the step's Config. The values override the values specified in the
+                        PromotionSpec.
+                      items:
+                        description: |-
+                          PromotionVariable describes a single variable that may be referenced by
+                          expressions in promotion steps.
+                        properties:
+                          name:
+                            description: Name is the name of the variable.
+                            minLength: 1
+                            pattern: ^[a-zA-Z_]\w*$
+                            type: string
+                          value:
+                            description: |-
+                              Value is the value of the variable. It is allowed to utilize expressions
+                              in the value.
+                              See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      type: array
+                  type: object
+                  x-kubernetes-validations:
+                  - message: PromotionTask step must have uses set and must not reference
+                      another task
+                    rule: has(self.uses) && !has(self.task)
+                minItems: 1
+                type: array
+              vars:
+                description: |-
+                  Vars specifies the variables available to the PromotionTask. The
+                  values of these variables are the default values that can be
+                  overridden by the step referencing the task.
+                items:
+                  description: |-
+                    PromotionVariable describes a single variable that may be referenced by
+                    expressions in promotion steps.
+                  properties:
+                    name:
+                      description: Name is the name of the variable.
+                      minLength: 1
+                      pattern: ^[a-zA-Z_]\w*$
+                      type: string
+                    value:
+                      description: |-
+                        Value is the value of the variable. It is allowed to utilize expressions
+                        in the value.
+                        See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                type: array
+            required:
+            - steps
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.2
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -1070,8 +1613,15 @@ spec:
                                 Config is opaque configuration for the PromotionStep that is understood
                                 only by each PromotionStep's implementation. It is legal to utilize
                                 expressions in defining values at any level of this block.
-                                See https://docs.kargo.io/references/expression-language for details.
+                                See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
                               x-kubernetes-preserve-unknown-fields: true
+                            if:
+                              description: |-
+                                If is an optional expression that, if present, must evaluate to a boolean
+                                value. If the expression evaluates to false, the step will be skipped.
+                                If the expression does not evaluate to a boolean value, the step will be
+                                considered to have failed.
+                              type: string
                             retry:
                               description: Retry is the retry policy for this step.
                               properties:
@@ -1116,14 +1666,63 @@ spec:
                                     ErrorThreshold is reached.
                                   type: string
                               type: object
+                            task:
+                              description: |-
+                                Task is a reference to a PromotionTask that should be inflated into a
+                                Promotion when it is built from a PromotionTemplate.
+                              properties:
+                                kind:
+                                  description: |-
+                                    Kind is the type of the PromotionTask. Can be either PromotionTask or
+                                    ClusterPromotionTask, default is PromotionTask.
+                                  enum:
+                                  - PromotionTask
+                                  - ClusterPromotionTask
+                                  type: string
+                                name:
+                                  description: Name is the name of the (Cluster)PromotionTask.
+                                  maxLength: 253
+                                  minLength: 1
+                                  pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                  type: string
+                              required:
+                              - name
+                              type: object
                             uses:
                               description: Uses identifies a runner that can execute
                                 this step.
                               minLength: 1
                               type: string
-                          required:
-                          - uses
+                            vars:
+                              description: |-
+                                Vars is a list of variables that can be referenced by expressions in
+                                the step's Config. The values override the values specified in the
+                                PromotionSpec.
+                              items:
+                                description: |-
+                                  PromotionVariable describes a single variable that may be referenced by
+                                  expressions in promotion steps.
+                                properties:
+                                  name:
+                                    description: Name is the name of the variable.
+                                    minLength: 1
+                                    pattern: ^[a-zA-Z_]\w*$
+                                    type: string
+                                  value:
+                                    description: |-
+                                      Value is the value of the variable. It is allowed to utilize expressions
+                                      in the value.
+                                      See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
+                                    type: string
+                                required:
+                                - name
+                                type: object
+                              type: array
                           type: object
+                          x-kubernetes-validations:
+                          - message: PromotionTemplate step must have exactly one
+                              of uses or task set
+                            rule: '(has(self.uses) ? !has(self.task) : has(self.task))'
                         minItems: 1
                         type: array
                       vars:
@@ -1144,11 +1743,10 @@ spec:
                               description: |-
                                 Value is the value of the variable. It is allowed to utilize expressions
                                 in the value.
-                                See https://docs.kargo.io/references/expression-language for details.
+                                See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
                               type: string
                           required:
                           - name
-                          - value
                           type: object
                         type: array
                     type: object
@@ -1185,7 +1783,7 @@ spec:
                         name:
                           description: |-
                             Name is the name of the resource of the kind indicated by the Kind field
-                            from which Freight may originated.
+                            from which Freight may originate.
                           type: string
                       required:
                       - kind
@@ -1196,6 +1794,16 @@ spec:
                         Sources describes where the requested Freight may be obtained from. This is
                         a required field.
                       properties:
+                        availabilityStrategy:
+                          description: |-
+                            AvailabilityStrategy specifies the semantics for how requested Freight is
+                            made available to the Stage. This field is optional. When left unspecified,
+                            the field is implicitly treated as if its value were "OneOf".
+                          enum:
+                          - All
+                          - OneOf
+                          - ""
+                          type: string
                         direct:
                           description: |-
                             Direct indicates the requested Freight may be obtained directly from the
@@ -1203,6 +1811,18 @@ spec:
                             the value of the Stages field must be non-empty. i.e. Between the two
                             fields, at least one source must be specified.
                           type: boolean
+                        requiredSoakTime:
+                          description: |-
+                            RequiredSoakTime specifies a minimum duration for which the requested
+                            Freight must have continuously occupied ("soaked in") in an upstream Stage
+                            before becoming available for promotion to this Stage. This is an optional
+                            field. If nil or zero, no soak time is required. Any soak time requirement
+                            is in ADDITION to the requirement that Freight be verified in an upstream
+                            Stage to become available for promotion to this Stage, although a manual
+                            approval for promotion to this Stage will supersede any soak time
+                            requirement.
+                          pattern: ^([0-9]+(\.[0-9]+)?(s|m|h))+$
+                          type: string
                         stages:
                           description: |-
                             Stages identifies other "upstream" Stages as potential sources of the
@@ -1257,6 +1877,14 @@ spec:
                       description: AnalysisTemplateReference is a reference to an
                         AnalysisTemplate.
                       properties:
+                        kind:
+                          description: |-
+                            Kind is the type of the AnalysisTemplate. Can be either AnalysisTemplate or
+                            ClusterAnalysisTemplate, default is AnalysisTemplate.
+                          enum:
+                          - AnalysisTemplate
+                          - ClusterAnalysisTemplate
+                          type: string
                         name:
                           description: |-
                             Name is the name of the AnalysisTemplate in the same project/namespace as
@@ -1435,6 +2063,12 @@ spec:
                           description: Image describes a specific version of a container
                             image.
                           properties:
+                            annotations:
+                              additionalProperties:
+                                type: string
+                              description: Annotations is a map of arbitrary metadata
+                                for the image.
+                              type: object
                             digest:
                               description: |-
                                 Digest identifies a specific version of the image in the repository
@@ -1477,7 +2111,7 @@ spec:
                           name:
                             description: |-
                               Name is the name of the resource of the kind indicated by the Kind field
-                              from which Freight may originated.
+                              from which Freight may originate.
                             type: string
                         required:
                         - kind
@@ -1576,6 +2210,12 @@ spec:
                               description: Image describes a specific version of a
                                 container image.
                               properties:
+                                annotations:
+                                  additionalProperties:
+                                    type: string
+                                  description: Annotations is a map of arbitrary metadata
+                                    for the image.
+                                  type: object
                                 digest:
                                   description: |-
                                     Digest identifies a specific version of the image in the repository
@@ -1618,7 +2258,7 @@ spec:
                               name:
                                 description: |-
                                   Name is the name of the resource of the kind indicated by the Kind field
-                                  from which Freight may originated.
+                                  from which Freight may originate.
                                 type: string
                             required:
                             - kind
@@ -1713,6 +2353,12 @@ spec:
                                     description: Image describes a specific version
                                       of a container image.
                                     properties:
+                                      annotations:
+                                        additionalProperties:
+                                          type: string
+                                        description: Annotations is a map of arbitrary
+                                          metadata for the image.
+                                        type: object
                                       digest:
                                         description: |-
                                           Digest identifies a specific version of the image in the repository
@@ -1755,7 +2401,7 @@ spec:
                                     name:
                                       description: |-
                                         Name is the name of the resource of the kind indicated by the Kind field
-                                        from which Freight may originated.
+                                        from which Freight may originate.
                                       type: string
                                   required:
                                   - kind
@@ -2011,6 +2657,12 @@ spec:
                               description: Image describes a specific version of a
                                 container image.
                               properties:
+                                annotations:
+                                  additionalProperties:
+                                    type: string
+                                  description: Annotations is a map of arbitrary metadata
+                                    for the image.
+                                  type: object
                                 digest:
                                   description: |-
                                     Digest identifies a specific version of the image in the repository
@@ -2053,7 +2705,7 @@ spec:
                               name:
                                 description: |-
                                   Name is the name of the resource of the kind indicated by the Kind field
-                                  from which Freight may originated.
+                                  from which Freight may originate.
                                 type: string
                             required:
                             - kind
@@ -2252,6 +2904,12 @@ spec:
                           description: Image describes a specific version of a container
                             image.
                           properties:
+                            annotations:
+                              additionalProperties:
+                                type: string
+                              description: Annotations is a map of arbitrary metadata
+                                for the image.
+                              type: object
                             digest:
                               description: |-
                                 Digest identifies a specific version of the image in the repository
@@ -2294,7 +2952,7 @@ spec:
                           name:
                             description: |-
                               Name is the name of the resource of the kind indicated by the Kind field
-                              from which Freight may originated.
+                              from which Freight may originate.
                             type: string
                         required:
                         - kind
@@ -2393,6 +3051,12 @@ spec:
                               description: Image describes a specific version of a
                                 container image.
                               properties:
+                                annotations:
+                                  additionalProperties:
+                                    type: string
+                                  description: Annotations is a map of arbitrary metadata
+                                    for the image.
+                                  type: object
                                 digest:
                                   description: |-
                                     Digest identifies a specific version of the image in the repository
@@ -2435,7 +3099,7 @@ spec:
                               name:
                                 description: |-
                                   Name is the name of the resource of the kind indicated by the Kind field
-                                  from which Freight may originated.
+                                  from which Freight may originate.
                                 type: string
                             required:
                             - kind
@@ -2530,6 +3194,12 @@ spec:
                                     description: Image describes a specific version
                                       of a container image.
                                     properties:
+                                      annotations:
+                                        additionalProperties:
+                                          type: string
+                                        description: Annotations is a map of arbitrary
+                                          metadata for the image.
+                                        type: object
                                       digest:
                                         description: |-
                                           Digest identifies a specific version of the image in the repository
@@ -2572,7 +3242,7 @@ spec:
                                     name:
                                       description: |-
                                         Name is the name of the resource of the kind indicated by the Kind field
-                                        from which Freight may originated.
+                                        from which Freight may originate.
                                       type: string
                                   required:
                                   - kind
@@ -2762,7 +3432,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.5
+    controller-gen.kubebuilder.io/version: v0.17.2
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -2914,8 +3584,9 @@ spec:
                             NewestFromBranch). This field is optional. When left unspecified, (and the
                             CommitSelectionStrategy is NewestFromBranch or unspecified), the
                             subscription is implicitly to the repository's default branch.
+                          maxLength: 255
                           minLength: 1
-                          pattern: ^\w+([-/]\w+)*$
+                          pattern: ^[a-zA-Z0-9]([a-zA-Z0-9._\/-]*[a-zA-Z0-9_-])?$
                           type: string
                         commitSelectionStrategy:
                           default: NewestFromBranch
@@ -3111,7 +3782,7 @@ spec:
                             constraints, which means the latest semantically tagged version of an image
                             will always be used. Care should be taken with leaving this field
                             unspecified, as it can lead to the unanticipated rollout of breaking
-                            changes. Refer to Image Updater documentation for more details.
+                            changes.
                             More info: https://github.com/masterminds/semver#checking-version-constraints
                           type: string
                         strictSemvers:
@@ -3339,6 +4010,13 @@ spec:
                               DiscoveredImageReference represents an image reference discovered by a
                               Warehouse for an ImageSubscription.
                             properties:
+                              annotations:
+                                additionalProperties:
+                                  type: string
+                                description: |-
+                                  Annotations is a map of key-value pairs that provide additional
+                                  information about the image.
+                                type: object
                               createdAt:
                                 description: |-
                                   CreatedAt is the time the image was created. This field is optional, and
@@ -3411,9 +4089,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-admin
   namespace: kargo
 ---
@@ -3425,9 +4103,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-api
   namespace: kargo
 ---
@@ -3439,9 +4117,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-controller
   namespace: kargo
 ---
@@ -3453,9 +4131,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-garbage-collector
   namespace: kargo
 ---
@@ -3467,9 +4145,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-management-controller
   namespace: kargo
 ---
@@ -3480,9 +4158,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-viewer
   namespace: kargo
 ---
@@ -3494,9 +4172,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-webhooks-server
   namespace: kargo
 ---
@@ -3507,9 +4185,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-admin
 rules:
 - apiGroups:
@@ -3534,8 +4212,10 @@ rules:
 - apiGroups:
   - kargo.akuity.io
   resources:
+  - clusterpromotiontasks
   - freights
   - projects
+  - promotiontasks
   - stages
   - warehouses
   verbs:
@@ -3578,6 +4258,12 @@ rules:
   - analysistemplates
   verbs:
   - '*'
+- apiGroups:
+  - argoproj.io
+  resources:
+  - clusteranalysistemplates
+  verbs:
+  - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -3587,9 +4273,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-api
 rules:
 - apiGroups:
@@ -3661,7 +4347,9 @@ rules:
 - apiGroups:
   - kargo.akuity.io
   resources:
+  - clusterpromotiontasks
   - projects
+  - promotiontasks
   - stages
   - warehouses
   verbs:
@@ -3696,6 +4384,7 @@ rules:
   - argoproj.io
   resources:
   - analysistemplates
+  - clusteranalysistemplates
   verbs:
   - '*'
 ---
@@ -3707,9 +4396,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-api-rollouts
 rules:
 - apiGroups:
@@ -3729,9 +4418,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-controller
 rules:
 - apiGroups:
@@ -3780,6 +4469,8 @@ rules:
 - apiGroups:
   - kargo.akuity.io
   resources:
+  - clusterpromotiontasks
+  - promotiontasks
   - warehouses
   verbs:
   - get
@@ -3804,9 +4495,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-controller-argocd
 rules:
 - apiGroups:
@@ -3827,15 +4518,23 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-controller-rollouts
 rules:
 - apiGroups:
   - argoproj.io
   resources:
   - analysistemplates
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - argoproj.io
+  resources:
+  - clusteranalysistemplates
   verbs:
   - get
   - list
@@ -3860,9 +4559,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-garbage-collector
 rules:
 - apiGroups:
@@ -3907,9 +4606,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-management-controller
 rules:
 - apiGroups:
@@ -3961,9 +4660,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-project-admin
 rules:
 - apiGroups:
@@ -3989,9 +4688,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-viewer
 rules:
 - apiGroups:
@@ -4016,9 +4715,11 @@ rules:
 - apiGroups:
   - kargo.akuity.io
   resources:
+  - clusterpromotiontasks
   - freights
   - projects
   - promotions
+  - promotiontasks
   - stages
   - warehouses
   verbs:
@@ -4030,6 +4731,7 @@ rules:
   resources:
   - analysisruns
   - analysistemplates
+  - clusteranalysistemplates
   verbs:
   - get
   - list
@@ -4043,9 +4745,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-webhooks-server
 rules:
 - apiGroups:
@@ -4083,8 +4785,10 @@ rules:
 - apiGroups:
   - kargo.akuity.io
   resources:
+  - clusterpromotiontasks
   - freights
   - projects
+  - promotiontasks
   - stages
   - warehouses
   verbs:
@@ -4113,9 +4817,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-webhooks-server-generic-gc
 rules:
 - apiGroups:
@@ -4133,9 +4837,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-webhooks-server-ns-controller
 rules:
 - apiGroups:
@@ -4152,9 +4856,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-admin
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4173,9 +4877,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-api
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4194,9 +4898,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-api-rollouts
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4215,9 +4919,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4236,9 +4940,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-controller-argocd
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4257,9 +4961,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-controller-rollouts
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4278,9 +4982,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-garbage-collector
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4299,9 +5003,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-management-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4319,9 +5023,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-viewer
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4340,9 +5044,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-webhooks-server
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4361,9 +5065,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-webhooks-server-generic-gc
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4382,9 +5086,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-webhooks-server-ns-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4413,14 +5117,15 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-api
   namespace: kargo
 ---
 apiVersion: v1
 data:
+  ALLOW_CREDENTIALS_OVER_HTTP: "false"
   API_SERVER_BASE_URL: http://localhost
   ARGOCD_INTEGRATION_ENABLED: "true"
   ARGOCD_NAMESPACE: argocd
@@ -4443,9 +5148,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-controller
   namespace: kargo
 ---
@@ -4464,9 +5169,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-garbage-collector
   namespace: kargo
 ---
@@ -4485,9 +5190,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-management-controller
   namespace: kargo
 ---
@@ -4503,9 +5208,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-webhooks-server
   namespace: kargo
 ---
@@ -4517,9 +5222,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-api
   namespace: kargo
 spec:
@@ -4541,9 +5246,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-webhooks-server
   namespace: kargo
 spec:
@@ -4565,9 +5270,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-api
   namespace: kargo
 spec:
@@ -4589,8 +5294,8 @@ spec:
         app.kubernetes.io/instance: kargo
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: kargo
-        app.kubernetes.io/version: v1.1.1
-        helm.sh/chart: kargo-1.1.1
+        app.kubernetes.io/version: v1.4.1
+        helm.sh/chart: kargo-1.4.1
     spec:
       containers:
       - command:
@@ -4601,24 +5306,24 @@ spec:
           valueFrom:
             resourceFieldRef:
               containerName: api
+              divisor: "1"
               resource: limits.memory
         - name: GOMAXPROCS
           valueFrom:
             resourceFieldRef:
               containerName: api
+              divisor: "1"
               resource: limits.cpu
         envFrom:
         - configMapRef:
             name: kargo-api
         - secretRef:
             name: admin-credentials
-        image: ghcr.io/akuity/kargo:v1.1.1
+        image: ghcr.io/akuity/kargo:v1.4.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
-          exec:
-            command:
-            - /usr/local/bin/grpc_health_probe
-            - -addr=:8080
+          grpc:
+            port: 8080
           initialDelaySeconds: 10
         name: api
         ports:
@@ -4626,10 +5331,8 @@ spec:
           name: h2c
           protocol: TCP
         readinessProbe:
-          exec:
-            command:
-            - /usr/local/bin/grpc_health_probe
-            - -addr=:8080
+          grpc:
+            port: 8080
           initialDelaySeconds: 5
         resources: {}
       serviceAccount: kargo-api
@@ -4642,9 +5345,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-controller
   namespace: kargo
 spec:
@@ -4659,14 +5362,14 @@ spec:
   template:
     metadata:
       annotations:
-        configmap/checksum: 86dffc1096f171ff1772ba5174f5e58f8959c09d3c9aaa2c3d67a9b9fa5d58ed
+        configmap/checksum: b4c1955760dec4b10fb628bdd47888111b03601a651a951800dcfb68f57688d0
       labels:
         app.kubernetes.io/component: controller
         app.kubernetes.io/instance: kargo
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: kargo
-        app.kubernetes.io/version: v1.1.1
-        helm.sh/chart: kargo-1.1.1
+        app.kubernetes.io/version: v1.4.1
+        helm.sh/chart: kargo-1.4.1
     spec:
       containers:
       - args:
@@ -4680,20 +5383,28 @@ spec:
           valueFrom:
             resourceFieldRef:
               containerName: controller
+              divisor: "1"
               resource: limits.memory
         - name: GOMAXPROCS
           valueFrom:
             resourceFieldRef:
               containerName: controller
+              divisor: "1"
               resource: limits.cpu
         envFrom:
         - configMapRef:
             name: kargo-controller
-        image: ghcr.io/akuity/kargo:v1.1.1
+        image: ghcr.io/akuity/kargo:v1.4.1
         imagePullPolicy: IfNotPresent
         name: controller
         resources: {}
+        volumeMounts:
+        - mountPath: /tmp
+          name: tmp-data
       serviceAccount: kargo-controller
+      volumes:
+      - emptyDir: {}
+        name: tmp-data
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -4703,9 +5414,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-management-controller
   namespace: kargo
 spec:
@@ -4738,16 +5449,18 @@ spec:
           valueFrom:
             resourceFieldRef:
               containerName: management-controller
+              divisor: "1"
               resource: limits.memory
         - name: GOMAXPROCS
           valueFrom:
             resourceFieldRef:
               containerName: management-controller
+              divisor: "1"
               resource: limits.cpu
         envFrom:
         - configMapRef:
             name: kargo-management-controller
-        image: ghcr.io/akuity/kargo:v1.1.1
+        image: ghcr.io/akuity/kargo:v1.4.1
         imagePullPolicy: IfNotPresent
         name: management-controller
         resources: {}
@@ -4761,9 +5474,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-webhooks-server
   namespace: kargo
 spec:
@@ -4784,8 +5497,8 @@ spec:
         app.kubernetes.io/instance: kargo
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: kargo
-        app.kubernetes.io/version: v1.1.1
-        helm.sh/chart: kargo-1.1.1
+        app.kubernetes.io/version: v1.4.1
+        helm.sh/chart: kargo-1.4.1
     spec:
       containers:
       - args:
@@ -4799,16 +5512,18 @@ spec:
           valueFrom:
             resourceFieldRef:
               containerName: webhooks-server
+              divisor: "1"
               resource: limits.memory
         - name: GOMAXPROCS
           valueFrom:
             resourceFieldRef:
               containerName: webhooks-server
+              divisor: "1"
               resource: limits.cpu
         envFrom:
         - configMapRef:
             name: kargo-webhooks-server
-        image: ghcr.io/akuity/kargo:v1.1.1
+        image: ghcr.io/akuity/kargo:v1.4.1
         imagePullPolicy: IfNotPresent
         name: webhooks-server
         ports:
@@ -4835,9 +5550,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo-garbage-collector
   namespace: kargo
 spec:
@@ -4851,8 +5566,8 @@ spec:
         app.kubernetes.io/instance: kargo
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: kargo
-        app.kubernetes.io/version: v1.1.1
-        helm.sh/chart: kargo-1.1.1
+        app.kubernetes.io/version: v1.4.1
+        helm.sh/chart: kargo-1.4.1
     spec:
       template:
         metadata:
@@ -4863,8 +5578,8 @@ spec:
             app.kubernetes.io/instance: kargo
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: kargo
-            app.kubernetes.io/version: v1.1.1
-            helm.sh/chart: kargo-1.1.1
+            app.kubernetes.io/version: v1.4.1
+            helm.sh/chart: kargo-1.4.1
         spec:
           containers:
           - args:
@@ -4878,16 +5593,18 @@ spec:
               valueFrom:
                 resourceFieldRef:
                   containerName: garbage-collector
+                  divisor: "1"
                   resource: limits.memory
             - name: GOMAXPROCS
               valueFrom:
                 resourceFieldRef:
                   containerName: garbage-collector
+                  divisor: "1"
                   resource: limits.cpu
             envFrom:
             - configMapRef:
                 name: kargo-garbage-collector
-            image: ghcr.io/akuity/kargo:v1.1.1
+            image: ghcr.io/akuity/kargo:v1.4.1
             imagePullPolicy: IfNotPresent
             name: garbage-collector
             resources: {}
@@ -4946,9 +5663,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo
 webhooks:
 - admissionReviewVersions:
@@ -4991,6 +5708,26 @@ webhooks:
     - UPDATE
     resources:
     - promotions
+    scope: Namespaced
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: kargo-webhooks-server
+      namespace: kargo
+      path: /validate-kargo-akuity-io-v1alpha1-promotiontask
+  failurePolicy: Fail
+  name: promotiontask.kargo.akuity.io
+  rules:
+  - apiGroups:
+    - kargo.akuity.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    resources:
+    - promotiontasks
     scope: Namespaced
   sideEffects: None
 - admissionReviewVersions:
@@ -5046,9 +5783,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.1.1
+    app.kubernetes.io/version: v1.4.1
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.1.1
+    helm.sh/chart: kargo-1.4.1
   name: kargo
 webhooks:
 - admissionReviewVersions:
