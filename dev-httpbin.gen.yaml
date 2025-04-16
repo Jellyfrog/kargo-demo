@@ -33,7 +33,7 @@ spec:
         app.kubernetes.io/name: httpbin
     spec:
       containers:
-      - image: quay.io/holos/mccutchen/go-httpbin:v2.15.0
+      - image: ghcr.io/mccutchen/go-httpbin:2.18.1
         livenessProbe:
           httpGet:
             path: /status/200
