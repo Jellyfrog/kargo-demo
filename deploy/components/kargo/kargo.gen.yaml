@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.2
+    controller-gen.kubebuilder.io/version: v0.17.3
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -153,8 +153,12 @@ spec:
                         PromotionSpec.
                       items:
                         description: |-
-                          PromotionVariable describes a single variable that may be referenced by
-                          expressions in promotion steps.
+                          ExpressionVariable describes a single variable that may be referenced by
+                          expressions in the context of a ClusterPromotionTask, PromotionTask,
+                          Promotion, AnalysisRun arguments, or other objects that support expressions.
+
+                          It is used to pass information to the expression evaluation engine, and to
+                          allow for dynamic evaluation of expressions based on the variable values.
                         properties:
                           name:
                             description: Name is the name of the variable.
@@ -185,8 +189,12 @@ spec:
                   overridden by the step referencing the task.
                 items:
                   description: |-
-                    PromotionVariable describes a single variable that may be referenced by
-                    expressions in promotion steps.
+                    ExpressionVariable describes a single variable that may be referenced by
+                    expressions in the context of a ClusterPromotionTask, PromotionTask,
+                    Promotion, AnalysisRun arguments, or other objects that support expressions.
+
+                    It is used to pass information to the expression evaluation engine, and to
+                    allow for dynamic evaluation of expressions based on the variable values.
                   properties:
                     name:
                       description: Name is the name of the variable.
@@ -217,7 +225,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.2
+    controller-gen.kubebuilder.io/version: v0.17.3
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -461,7 +469,86 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.2
+    controller-gen.kubebuilder.io/version: v0.17.3
+    helm.sh/resource-policy: keep
+  labels:
+    argocd.argoproj.io/instance: argocd-kargo
+  name: projectconfigs.kargo.akuity.io
+spec:
+  group: kargo.akuity.io
+  names:
+    kind: ProjectConfig
+    listKind: ProjectConfigList
+    plural: projectconfigs
+    singular: projectconfig
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: |-
+          ProjectConfig is a resource type that describes the configuration of a
+          Project.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: Spec describes the configuration of a Project.
+            properties:
+              promotionPolicies:
+                description: |-
+                  PromotionPolicies defines policies governing the promotion of Freight to
+                  specific Stages within the Project.
+                items:
+                  description: |-
+                    PromotionPolicy defines policies governing the promotion of Freight to a
+                    specific Stage.
+                  properties:
+                    autoPromotionEnabled:
+                      description: |-
+                        AutoPromotionEnabled indicates whether new Freight can automatically be
+                        promoted into the Stage referenced by the Stage field. Note: There are may
+                        be other conditions also required for an auto-promotion to occur. This
+                        field defaults to false, but is commonly set to true for Stages that
+                        subscribe to Warehouses instead of other, upstream Stages. This allows
+                        users to define Stages that are automatically updated as soon as new
+                        artifacts are detected.
+                      type: boolean
+                    stage:
+                      minLength: 1
+                      pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                      type: string
+                  required:
+                  - stage
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.3
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -510,12 +597,17 @@ spec:
           metadata:
             type: object
           spec:
-            description: Spec describes a Project.
+            description: |-
+              Spec describes a Project.
+
+              Deprecated: Create a ProjectConfig resource with the same name as the
+              Project resource in the Project's namespace. The ProjectConfig resource
+              can be used to configure the Project.
             properties:
               promotionPolicies:
                 description: |-
                   PromotionPolicies defines policies governing the promotion of Freight to
-                  specific Stages within this Project.
+                  specific Stages within the Project.
                 items:
                   description: |-
                     PromotionPolicy defines policies governing the promotion of Freight to a
@@ -630,7 +722,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.2
+    controller-gen.kubebuilder.io/version: v0.17.3
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -813,8 +905,12 @@ spec:
                         PromotionSpec.
                       items:
                         description: |-
-                          PromotionVariable describes a single variable that may be referenced by
-                          expressions in promotion steps.
+                          ExpressionVariable describes a single variable that may be referenced by
+                          expressions in the context of a ClusterPromotionTask, PromotionTask,
+                          Promotion, AnalysisRun arguments, or other objects that support expressions.
+
+                          It is used to pass information to the expression evaluation engine, and to
+                          allow for dynamic evaluation of expressions based on the variable values.
                         properties:
                           name:
                             description: Name is the name of the variable.
@@ -844,8 +940,12 @@ spec:
                   promotion steps.
                 items:
                   description: |-
-                    PromotionVariable describes a single variable that may be referenced by
-                    expressions in promotion steps.
+                    ExpressionVariable describes a single variable that may be referenced by
+                    expressions in the context of a ClusterPromotionTask, PromotionTask,
+                    Promotion, AnalysisRun arguments, or other objects that support expressions.
+
+                    It is used to pass information to the expression evaluation engine, and to
+                    allow for dynamic evaluation of expressions based on the variable values.
                   properties:
                     name:
                       description: Name is the name of the variable.
@@ -1312,7 +1412,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.2
+    controller-gen.kubebuilder.io/version: v0.17.3
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -1463,8 +1563,12 @@ spec:
                         PromotionSpec.
                       items:
                         description: |-
-                          PromotionVariable describes a single variable that may be referenced by
-                          expressions in promotion steps.
+                          ExpressionVariable describes a single variable that may be referenced by
+                          expressions in the context of a ClusterPromotionTask, PromotionTask,
+                          Promotion, AnalysisRun arguments, or other objects that support expressions.
+
+                          It is used to pass information to the expression evaluation engine, and to
+                          allow for dynamic evaluation of expressions based on the variable values.
                         properties:
                           name:
                             description: Name is the name of the variable.
@@ -1495,8 +1599,12 @@ spec:
                   overridden by the step referencing the task.
                 items:
                   description: |-
-                    PromotionVariable describes a single variable that may be referenced by
-                    expressions in promotion steps.
+                    ExpressionVariable describes a single variable that may be referenced by
+                    expressions in the context of a ClusterPromotionTask, PromotionTask,
+                    Promotion, AnalysisRun arguments, or other objects that support expressions.
+
+                    It is used to pass information to the expression evaluation engine, and to
+                    allow for dynamic evaluation of expressions based on the variable values.
                   properties:
                     name:
                       description: Name is the name of the variable.
@@ -1527,7 +1635,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.2
+    controller-gen.kubebuilder.io/version: v0.17.3
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -1700,8 +1808,12 @@ spec:
                                 PromotionSpec.
                               items:
                                 description: |-
-                                  PromotionVariable describes a single variable that may be referenced by
-                                  expressions in promotion steps.
+                                  ExpressionVariable describes a single variable that may be referenced by
+                                  expressions in the context of a ClusterPromotionTask, PromotionTask,
+                                  Promotion, AnalysisRun arguments, or other objects that support expressions.
+
+                                  It is used to pass information to the expression evaluation engine, and to
+                                  allow for dynamic evaluation of expressions based on the variable values.
                                 properties:
                                   name:
                                     description: Name is the name of the variable.
@@ -1731,8 +1843,12 @@ spec:
                           promotion steps.
                         items:
                           description: |-
-                            PromotionVariable describes a single variable that may be referenced by
-                            expressions in promotion steps.
+                            ExpressionVariable describes a single variable that may be referenced by
+                            expressions in the context of a ClusterPromotionTask, PromotionTask,
+                            Promotion, AnalysisRun arguments, or other objects that support expressions.
+
+                            It is used to pass information to the expression evaluation engine, and to
+                            allow for dynamic evaluation of expressions based on the variable values.
                           properties:
                             name:
                               description: Name is the name of the variable.
@@ -1847,6 +1963,35 @@ spec:
                   kargo.akuity.io/shard label with the value of this field. When this field
                   is empty, the webhook will ensure that label is absent.
                 type: string
+              vars:
+                description: |-
+                  Vars is a list of variables that can be referenced anywhere in the
+                  StageSpec that supports expressions. For example, the PromotionTemplate
+                  and arguments of the Verification.
+                items:
+                  description: |-
+                    ExpressionVariable describes a single variable that may be referenced by
+                    expressions in the context of a ClusterPromotionTask, PromotionTask,
+                    Promotion, AnalysisRun arguments, or other objects that support expressions.
+
+                    It is used to pass information to the expression evaluation engine, and to
+                    allow for dynamic evaluation of expressions based on the variable values.
+                  properties:
+                    name:
+                      description: Name is the name of the variable.
+                      minLength: 1
+                      pattern: ^[a-zA-Z_]\w*$
+                      type: string
+                    value:
+                      description: |-
+                        Value is the value of the variable. It is allowed to utilize expressions
+                        in the value.
+                        See https://docs.kargo.io/user-guide/reference-docs/expressions for details.
+                      type: string
+                  required:
+                  - name
+                  type: object
+                type: array
               verification:
                 description: |-
                   Verification describes how to verify a Stage's current Freight is fit for
@@ -3432,7 +3577,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.17.2
+    controller-gen.kubebuilder.io/version: v0.17.3
     helm.sh/resource-policy: keep
   labels:
     argocd.argoproj.io/instance: argocd-kargo
@@ -4089,9 +4234,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-admin
   namespace: kargo
 ---
@@ -4103,9 +4248,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-api
   namespace: kargo
 ---
@@ -4117,9 +4262,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-controller
   namespace: kargo
 ---
@@ -4131,9 +4276,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-garbage-collector
   namespace: kargo
 ---
@@ -4145,9 +4290,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-management-controller
   namespace: kargo
 ---
@@ -4158,9 +4303,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-viewer
   namespace: kargo
 ---
@@ -4172,9 +4317,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-webhooks-server
   namespace: kargo
 ---
@@ -4185,9 +4330,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-admin
 rules:
 - apiGroups:
@@ -4215,6 +4360,7 @@ rules:
   - clusterpromotiontasks
   - freights
   - projects
+  - projectconfigs
   - promotiontasks
   - stages
   - warehouses
@@ -4273,9 +4419,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-api
 rules:
 - apiGroups:
@@ -4380,9 +4526,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-api-rollouts
 rules:
 - apiGroups:
@@ -4402,11 +4548,19 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-controller
 rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
 - apiGroups:
   - ""
   resources:
@@ -4426,6 +4580,7 @@ rules:
   - kargo.akuity.io
   resources:
   - projects
+  - projectconfigs
   verbs:
   - get
   - list
@@ -4479,9 +4634,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-controller-argocd
 rules:
 - apiGroups:
@@ -4502,9 +4657,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-controller-rollouts
 rules:
 - apiGroups:
@@ -4543,9 +4698,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-garbage-collector
 rules:
 - apiGroups:
@@ -4590,9 +4745,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-management-controller
 rules:
 - apiGroups:
@@ -4629,12 +4784,19 @@ rules:
   - get
   - list
   - watch
+  - update
 - apiGroups:
   - kargo.akuity.io
   resources:
   - projects/status
   verbs:
   - patch
+- apiGroups:
+  - kargo.akuity.io
+  resources:
+  - projectconfigs
+  verbs:
+  - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -4644,9 +4806,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-project-admin
 rules:
 - apiGroups:
@@ -4672,9 +4834,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-viewer
 rules:
 - apiGroups:
@@ -4702,6 +4864,7 @@ rules:
   - clusterpromotiontasks
   - freights
   - projects
+  - projectconfigs
   - promotions
   - promotiontasks
   - stages
@@ -4729,9 +4892,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-webhooks-server
 rules:
 - apiGroups:
@@ -4772,6 +4935,7 @@ rules:
   - clusterpromotiontasks
   - freights
   - projects
+  - projectconfigs
   - promotiontasks
   - stages
   - warehouses
@@ -4801,9 +4965,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-webhooks-server-generic-gc
 rules:
 - apiGroups:
@@ -4821,9 +4985,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-webhooks-server-ns-controller
 rules:
 - apiGroups:
@@ -4840,9 +5004,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-admin
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4861,9 +5025,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-api
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4882,9 +5046,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-api-rollouts
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4903,9 +5067,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4924,9 +5088,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-controller-argocd
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4945,9 +5109,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-controller-rollouts
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4966,9 +5130,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-garbage-collector
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -4987,9 +5151,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-management-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -5007,9 +5171,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-viewer
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -5028,9 +5192,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-webhooks-server
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -5049,9 +5213,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-webhooks-server-generic-gc
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -5070,9 +5234,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-webhooks-server-ns-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -5101,9 +5265,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-api
   namespace: kargo
 ---
@@ -5132,9 +5296,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-controller
   namespace: kargo
 ---
@@ -5153,9 +5317,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-garbage-collector
   namespace: kargo
 ---
@@ -5174,9 +5338,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-management-controller
   namespace: kargo
 ---
@@ -5192,9 +5356,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-webhooks-server
   namespace: kargo
 ---
@@ -5206,9 +5370,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-api
   namespace: kargo
 spec:
@@ -5230,9 +5394,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-webhooks-server
   namespace: kargo
 spec:
@@ -5254,9 +5418,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-api
   namespace: kargo
 spec:
@@ -5278,8 +5442,8 @@ spec:
         app.kubernetes.io/instance: kargo
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: kargo
-        app.kubernetes.io/version: v1.4.3
-        helm.sh/chart: kargo-1.4.3
+        app.kubernetes.io/version: v1.5.0-unstable-20250423
+        helm.sh/chart: kargo-1.5.0-unstable-20250423
     spec:
       containers:
       - command:
@@ -5303,7 +5467,7 @@ spec:
             name: kargo-api
         - secretRef:
             name: admin-credentials
-        image: ghcr.io/akuity/kargo:v1.4.3
+        image: ghcr.io/akuity/kargo:v1.5.0-unstable-20250423
         imagePullPolicy: IfNotPresent
         livenessProbe:
           grpc:
@@ -5329,9 +5493,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-controller
   namespace: kargo
 spec:
@@ -5352,8 +5516,8 @@ spec:
         app.kubernetes.io/instance: kargo
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: kargo
-        app.kubernetes.io/version: v1.4.3
-        helm.sh/chart: kargo-1.4.3
+        app.kubernetes.io/version: v1.5.0-unstable-20250423
+        helm.sh/chart: kargo-1.5.0-unstable-20250423
     spec:
       containers:
       - args:
@@ -5378,7 +5542,7 @@ spec:
         envFrom:
         - configMapRef:
             name: kargo-controller
-        image: ghcr.io/akuity/kargo:v1.4.3
+        image: ghcr.io/akuity/kargo:v1.5.0-unstable-20250423
         imagePullPolicy: IfNotPresent
         name: controller
         resources: {}
@@ -5398,9 +5562,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-management-controller
   namespace: kargo
 spec:
@@ -5444,7 +5608,7 @@ spec:
         envFrom:
         - configMapRef:
             name: kargo-management-controller
-        image: ghcr.io/akuity/kargo:v1.4.3
+        image: ghcr.io/akuity/kargo:v1.5.0-unstable-20250423
         imagePullPolicy: IfNotPresent
         name: management-controller
         resources: {}
@@ -5458,9 +5622,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-webhooks-server
   namespace: kargo
 spec:
@@ -5481,8 +5645,8 @@ spec:
         app.kubernetes.io/instance: kargo
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: kargo
-        app.kubernetes.io/version: v1.4.3
-        helm.sh/chart: kargo-1.4.3
+        app.kubernetes.io/version: v1.5.0-unstable-20250423
+        helm.sh/chart: kargo-1.5.0-unstable-20250423
     spec:
       containers:
       - args:
@@ -5507,7 +5671,7 @@ spec:
         envFrom:
         - configMapRef:
             name: kargo-webhooks-server
-        image: ghcr.io/akuity/kargo:v1.4.3
+        image: ghcr.io/akuity/kargo:v1.5.0-unstable-20250423
         imagePullPolicy: IfNotPresent
         name: webhooks-server
         ports:
@@ -5534,9 +5698,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo-garbage-collector
   namespace: kargo
 spec:
@@ -5550,8 +5714,8 @@ spec:
         app.kubernetes.io/instance: kargo
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: kargo
-        app.kubernetes.io/version: v1.4.3
-        helm.sh/chart: kargo-1.4.3
+        app.kubernetes.io/version: v1.5.0-unstable-20250423
+        helm.sh/chart: kargo-1.5.0-unstable-20250423
     spec:
       template:
         metadata:
@@ -5562,8 +5726,8 @@ spec:
             app.kubernetes.io/instance: kargo
             app.kubernetes.io/managed-by: Helm
             app.kubernetes.io/name: kargo
-            app.kubernetes.io/version: v1.4.3
-            helm.sh/chart: kargo-1.4.3
+            app.kubernetes.io/version: v1.5.0-unstable-20250423
+            helm.sh/chart: kargo-1.5.0-unstable-20250423
         spec:
           containers:
           - args:
@@ -5588,7 +5752,7 @@ spec:
             envFrom:
             - configMapRef:
                 name: kargo-garbage-collector
-            image: ghcr.io/akuity/kargo:v1.4.3
+            image: ghcr.io/akuity/kargo:v1.5.0-unstable-20250423
             imagePullPolicy: IfNotPresent
             name: garbage-collector
             resources: {}
@@ -5647,9 +5811,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo
 webhooks:
 - admissionReviewVersions:
@@ -5747,9 +5911,9 @@ metadata:
     app.kubernetes.io/instance: kargo
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/name: kargo
-    app.kubernetes.io/version: v1.4.3
+    app.kubernetes.io/version: v1.5.0-unstable-20250423
     argocd.argoproj.io/instance: argocd-kargo
-    helm.sh/chart: kargo-1.4.3
+    helm.sh/chart: kargo-1.5.0-unstable-20250423
   name: kargo
 webhooks:
 - admissionReviewVersions:
@@ -5791,9 +5955,31 @@ webhooks:
     - v1alpha1
     operations:
     - CREATE
+    - UPDATE
     resources:
     - projects
     scope: Cluster
+  sideEffects: NoneOnDryRun
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: kargo-webhooks-server
+      namespace: kargo
+      path: /validate-kargo-akuity-io-v1alpha1-projectconfig
+  failurePolicy: Fail
+  name: projectconfig.kargo.akuity.io
+  rules:
+  - apiGroups:
+    - kargo.akuity.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - projectconfigs
+    scope: Namespaced
   sideEffects: NoneOnDryRun
 - admissionReviewVersions:
   - v1

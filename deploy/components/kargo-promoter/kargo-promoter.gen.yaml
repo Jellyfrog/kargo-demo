@@ -35,12 +35,12 @@ spec:
           path: src/config/kargo/kargo.yaml
           updates:
           - key: chart.version
-            value: ${{ chartFrom('oci://ghcr.io/akuity/kargo-charts/kargo', warehouse('kargo')).Version
-              }}
+            value: ${{ chartFrom('oci://ghcr.io/akuity/kargo-charts-unstable/kargo',
+              warehouse('kargo')).Version }}
         uses: yaml-update
       - as: commit
         config:
-          message: 'kargo: update to ${{ chartFrom(''oci://ghcr.io/akuity/kargo-charts/kargo'',
+          message: 'kargo: update to ${{ chartFrom(''oci://ghcr.io/akuity/kargo-charts-unstable/kargo'',
             warehouse(''kargo'')).Version }}'
           path: ./src
         uses: git-commit
@@ -76,4 +76,4 @@ spec:
   interval: 5m0s
   subscriptions:
   - chart:
-      repoURL: oci://ghcr.io/akuity/kargo-charts/kargo
+      repoURL: oci://ghcr.io/akuity/kargo-charts-unstable/kargo

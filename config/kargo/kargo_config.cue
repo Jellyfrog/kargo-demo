@@ -34,7 +34,7 @@ config: #Config & {
 
 	datafile: "./config/kargo/kargo.yaml"
 	chart: {
-		name:    "oci://ghcr.io/akuity/kargo-charts/kargo"
+		name:    "oci://ghcr.io/akuity/kargo-charts-unstable/kargo"
 		version: string & _kargo_data.chart.version
 	}
 
