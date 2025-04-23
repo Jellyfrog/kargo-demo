@@ -40,7 +40,7 @@ package kargo
 	//# @section Image Parameters
 	image: {
 		//# @param image.repository Image repository of Kargo
-		repository: "ghcr.io/akuity/kargo"
+		repository: "ghcr.io/akuity/kargo-unstable"
 		//# @param image.tag Overrides the image tag. The default tag is the value of `.Chart.AppVersion`
 		tag: ""
 		//# @param image.pullPolicy Image pull policy

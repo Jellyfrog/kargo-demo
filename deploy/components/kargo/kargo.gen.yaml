@@ -5467,7 +5467,7 @@ spec:
             name: kargo-api
         - secretRef:
             name: admin-credentials
-        image: ghcr.io/akuity/kargo:v1.5.0-unstable-20250423
+        image: ghcr.io/akuity/kargo-unstable:v1.5.0-unstable-20250423
         imagePullPolicy: IfNotPresent
         livenessProbe:
           grpc:
@@ -5542,7 +5542,7 @@ spec:
         envFrom:
         - configMapRef:
             name: kargo-controller
-        image: ghcr.io/akuity/kargo:v1.5.0-unstable-20250423
+        image: ghcr.io/akuity/kargo-unstable:v1.5.0-unstable-20250423
         imagePullPolicy: IfNotPresent
         name: controller
         resources: {}
@@ -5608,7 +5608,7 @@ spec:
         envFrom:
         - configMapRef:
             name: kargo-management-controller
-        image: ghcr.io/akuity/kargo:v1.5.0-unstable-20250423
+        image: ghcr.io/akuity/kargo-unstable:v1.5.0-unstable-20250423
         imagePullPolicy: IfNotPresent
         name: management-controller
         resources: {}
@@ -5671,7 +5671,7 @@ spec:
         envFrom:
         - configMapRef:
             name: kargo-webhooks-server
-        image: ghcr.io/akuity/kargo:v1.5.0-unstable-20250423
+        image: ghcr.io/akuity/kargo-unstable:v1.5.0-unstable-20250423
         imagePullPolicy: IfNotPresent
         name: webhooks-server
         ports:
@@ -5752,7 +5752,7 @@ spec:
             envFrom:
             - configMapRef:
                 name: kargo-garbage-collector
-            image: ghcr.io/akuity/kargo:v1.5.0-unstable-20250423
+            image: ghcr.io/akuity/kargo-unstable:v1.5.0-unstable-20250423
             imagePullPolicy: IfNotPresent
             name: garbage-collector
             resources: {}
